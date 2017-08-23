@@ -1,17 +1,17 @@
-##Wiremock Body Transformer
+## Wiremock Body Transformer
 Wiremock Body Transformer is a [Wiremock](http://wiremock.org/) extension that can take the request body and interpolates the variable into the response.
 Built on the extensions platform of Wiremock, it allows your wiremock response to be dynamic and dependent on the request for a smarter testing process.
 
-###Installation
+### Installation
 ```
 <dependency>
 		<groupId>com.opentable</groupId>
 		<artifactId>wiremock-body-transformer</artifactId>
-		<version>1.1.5</version>
+		<version>1.1.6</version>
 </dependency>
 ```
 
-###How It Works
+### How It Works
 The body transformer supports __JSON__, __XML__, __x-www-form-urlencoded__ and __query string__ formats.
 
 The response body stub acts as a template where the variables come from the request json/xml/form body similar to string interpolation.
@@ -61,7 +61,7 @@ This response will be retuned as follows:
 	"param2": bak
 }
 ```
-###Nested Fields
+### Nested Fields
 You can specify nested fields via dot notations.
 For example:
 ```
@@ -104,9 +104,31 @@ returns a body that looks like:
 }
 ```
 
-###Usage
+**Be careful**, when using 'urlRegex', the value captured by the named group in the regex will take precedence over the variables in the xml/json/key-value request body.
+##### Example
+Fetching url `/param/10` with body `var=11&got=it`
+```
+    wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("content-type", "application/json")
+            .withBody("{\"var\":\"$(var)\",\"got\":\"it\"}")
+            .withTransformers("body-transformer")
+            .withTransformerParameter("urlRegex", "/param/(?<var>.*?)")));
+```
+returns a body that looks like:
+```
+{
+    "var":"10",
+    "got":"it"
+}
+```
 
-####As part of [Unit Testing with Wiremock](http://wiremock.org/extending-wiremock.html): 
+So, the **$(var)** was replaced with url regex **var=10** instead of the body **var=11**
+
+### Usage
+
+#### As part of [Unit Testing with Wiremock](http://wiremock.org/extending-wiremock.html):
 
 Instantiating the Wiremock server with the `BodyTransformer` instance.
 ```
@@ -130,8 +152,8 @@ wireMockRule.stubFor(post(urlEqualTo("/get/this"))
 		.withTransformers("body-transformer")));
 ```
 
-####As part of the [Wiremock standalone process](http://wiremock.org/running-standalone.html#running-standalone):
-[\[Download the body transformer extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.1.5/wiremock-body-transformer-1.1.5.jar)
+#### As part of the [Wiremock standalone process](http://wiremock.org/running-standalone.html#running-standalone):
+[\[Download the body transformer extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.1.6/wiremock-body-transformer-1.1.6.jar)
 
 [\[Download the Wiremock standalone jar here.\]](http://repo1.maven.org/maven2/com/github/tomakehurst/wiremock-standalone/2.3.1/wiremock-standalone-2.3.1.jar)
 
@@ -139,12 +161,12 @@ Including the extension upon start on the command line via the `--extensions` fl
 
 For Unix:
 ```
-java -cp "wiremock-body-transformer-1.1.5.jar:wiremock-2.3.1-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
+java -cp "wiremock-body-transformer-1.1.6.jar:wiremock-2.3.1-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
 ```
 
 For Windows:
 ```
-java -cp "wiremock-body-transformer-1.1.5.jar;wiremock-2.3.1-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
+java -cp "wiremock-body-transformer-1.1.6.jar;wiremock-2.3.1-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
 ```
 
 Add the transformer into the specific stub via the "body-transformer" name.
@@ -162,7 +184,7 @@ Add the transformer into the specific stub via the "body-transformer" name.
 }
 ```
 
-###Example
+### Example
 For the following stub:
 ```
 {
@@ -198,12 +220,12 @@ would return a response body of:
 }
 ```
 
-###Additional Features
+### Additional Features
 
-####Random Integer Generator
+#### Random Integer Generator
 With the pattern `$(!RandomInteger)` inside the stub response body, a random positive integer will be interpolated in that position.
 
-#####Example
+##### Example
 ```
 {
 	"request": {
